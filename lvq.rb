@@ -43,9 +43,11 @@ p v2        #=> Vector[-1, 2, 3, 4]
 
 #---------------------------------class----------------------------------
 class LVQ
-  
+  ALPHA1 = 0.05  #代表点を近づけるときに使う定数
+  ALPHA2 = 0.001 #代表点を遠ざけるときに使う定数α(0<α<1)
   def initialize(amb) #代表ベクトル(渡されるときは配列)を初期値として受け取る
     count = 1
+    file = File.open("pre.txt","w+")
     @daihyo = {} # 代表ベクトルを格納するハッシュ
     @data = Hash.new{|h,key| h[key]=[]} #同一キーに値を格納するための宣言
     #プロット点の集合　{key=>ラベル　value=>座標}　最初はすべてのラベルをf(不明)で登録
@@ -53,8 +55,12 @@ class LVQ
     #ハッシュに格納　｛key:”カウント” => value:ベクトル}
     @size.times do
       @daihyo[count.to_s] = amb[count-1]
+      tmp = amb[count-1].to_a #ベクトルから配列に変換
+      file.puts"#{tmp[0]} #{tmp[1]}\n"
+      tmp.clear
       count += 1
     end
+    file.close
   end
 
   #指定した代表ベクトル全体にスカラーの加算をする
@@ -103,6 +109,48 @@ class LVQ
     file3.close
   end
 
+  #LVQ1により代表点の更新を行う
+  def lvq
+
+    #すべてのデータ点について
+    @data["f"].each  do |v|
+      v_min = 99999999999.0         #距離の最小値を保存
+      min = "0"                     #最も近い代表点のキーを保存
+
+      @daihyo.each{ |key,value|     #代表点との距離を計算
+        tmp_v = v-value
+        if tmp_v.r < v_min then
+          min = key                 #最小値のキーをminに記録
+          v_min = tmp_v.r           #距離の最小値を更新
+        end
+      }
+      
+      @daihyo.each{ |key,value|     #代表点の値を更新
+        tmp_v = v - value
+        if key == min then           #一番近い代表点はそのデータ点に近づける
+          @daihyo[key] = value + tmp_v.*(ALPHA1)
+        else                        #それ以外の代表点はそのデータ点から遠ざける
+          @daihyo[key] = value - tmp_v.*(ALPHA2)
+        end
+      }
+      
+    end
+    
+  end
+
+  def daihyo_output #代表ベクトルの最終的な値をファイルに出力
+    count=1
+    file = File.open("result.txt","w+")
+    v = Array.new
+    @size.times do
+      tmp = @daihyo[count.to_s].to_a #ベクトルから配列に変換
+      file.puts"#{tmp[0]} #{tmp[1]}\n"
+      tmp.clear
+      count += 1
+    end
+    file.close
+  end
+
   #代表ベクトルを表示
   def print
     p @daihyo
@@ -111,11 +159,18 @@ end
 
 #-------------------------------------main-------------------------------
 amb=Array.new
-v1=Vector[1,3,5]
-v2=Vector[2,4,6]
+v1=Vector[1.0,10.0]
+v2=Vector[20.0,50.0]
+v3=Vector[60.0,30.0]
 amb.push(v1)
 amb.push(v2)
+amb.push(v3)
 
 lvq = LVQ.new(amb)
 lvq.make_plot
+lvq.print
+10.times do
+lvq.lvq
+end
+lvq.daihyo_output
 lvq.print
