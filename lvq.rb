@@ -43,8 +43,8 @@ p v2        #=> Vector[-1, 2, 3, 4]
 
 #---------------------------------class----------------------------------
 class LVQ
-  ALPHA1 = 0.05  #代表点を近づけるときに使う定数
-  ALPHA2 = 0.001 #代表点を遠ざけるときに使う定数α(0<α<1)
+  ALPHA1 = 0.1  #代表点を近づけるときに使う定数
+  ALPHA2 = 0.0001 #代表点を遠ざけるときに使う定数α(0<α<1)
   def initialize(amb) #代表ベクトル(渡されるときは配列)を初期値として受け取る
     count = 1
     file = File.open("pre.txt","w+")
@@ -80,22 +80,27 @@ class LVQ
     file1 = File.open("a.txt","w+")
     file2 = File.open("b.txt","w+")
     file3 = File.open("c.txt","w+")
+    file4 = File.open("d.txt","w+")
     zahyo = Array.new
     rand1 = Random.new
     count = 1
-    150.times do
-      if count < 51 then
-        zahyo.push(rand1.rand(10.0 .. 40.0))
-        zahyo.push(rand1.rand(1.0 .. 35.0))
+    1000.times do
+      if count < 251 then
+        zahyo.push(rand1.rand(10.0 .. 400.0))  #x座標を生成
+        zahyo.push(rand1.rand(1.0 .. 350.0))   #y座標を生成
         file1.puts "#{zahyo[0]} #{zahyo[1]}\n"
-      elsif count < 101 then
-        zahyo.push(rand1.rand(1.0 .. 25.0))
-        zahyo.push(rand1.rand(75.0 .. 100.0))
+      elsif count < 501 then
+        zahyo.push(rand1.rand(1.0 .. 250.0))
+        zahyo.push(rand1.rand(750.0 .. 1000.0))
         file2.puts "#{zahyo[0]} #{zahyo[1]}\n"
-      else 
-        zahyo.push(rand1.rand(50.0 .. 100.0))
-        zahyo.push(rand1.rand(30.0 .. 80.0))
+      elsif count < 751 then
+        zahyo.push(rand1.rand(500.0 .. 1000.0))
+        zahyo.push(rand1.rand(300.0 .. 800.0))
         file3.puts "#{zahyo[0]} #{zahyo[1]}\n"
+      else
+        zahyo.push(rand1.rand(1.0 .. 1000.0))
+        zahyo.push(rand1.rand(1.0 .. 1000.0))
+        file4.puts "#{zahyo[0]} #{zahyo[1]}\n"
       end
       file.puts "#{zahyo[0]} #{zahyo[1]}\n"
       vect = Vector.elements(zahyo,true)
@@ -159,17 +164,20 @@ end
 
 #-------------------------------------main-------------------------------
 amb=Array.new
-v1=Vector[1.0,10.0]
-v2=Vector[20.0,50.0]
-v3=Vector[60.0,30.0]
+v1=Vector[10.0,250.0]
+v2=Vector[10.0,750.0]
+v3=Vector[500.0,250.0]
+v4=Vector[700.0,400.0]
+
 amb.push(v1)
 amb.push(v2)
 amb.push(v3)
+amb.push(v4)
 
 lvq = LVQ.new(amb)
 lvq.make_plot
 lvq.print
-10.times do
+1000.times do
 lvq.lvq
 end
 lvq.daihyo_output
