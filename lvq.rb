@@ -49,7 +49,8 @@ class LVQ
     count = 1
     file = File.open("pre.txt","w+")
     @daihyo = {} # 代表ベクトルを格納するハッシュ
-    @data = Hash.new{|h,key| h[key]=[]} #同一キーに値を格納するための宣言
+    @data = Hash.new{|h,key| h[key]=[]} #同一キーに複数値を格納するための宣言
+    @result = Hash.new{|h,key| h[key]=[]}#ラベル付けしたデータ点を記録
     #プロット点の集合　{key=>ラベル　value=>座標}　最初はすべてのラベルをf(不明)で登録
     @size = amb.size #代表ベクトルが格納されている配列の大きさ(ベクトル数)
     #ハッシュに格納　｛key:”カウント” => value:ベクトル}
@@ -144,6 +145,24 @@ class LVQ
   end
 
   def daihyo_output #代表ベクトルの最終的な値をファイルに出力
+                    #また、データ点のラベル付を行う
+    res = Array.new
+    #すべてのデータ点について
+    @data["f"].each  do |v|
+      v_min = 99999999999.0         #距離の最小値を保存
+      min = "0"                     #最も近い代表点のキーを保存
+      @daihyo.each{ |key,value|     #代表点との距離を計算
+        tmp_v = v-value             #データ点と代表点との差を計算　
+        if tmp_v.r < v_min then     #差の距離（ノルム）を計算し、それが記録されていた最小値より小さい時
+          min = key                 #最小値のキーをminに記録
+          v_min = tmp_v.r           #距離の最小値を更新
+        end
+      }     
+     #データ点にラベル付を行う
+     res = v.to_a
+     @result[min] << res 
+    end
+
     count=1
     file = File.open("result.txt","w+")
     v = Array.new
@@ -154,7 +173,9 @@ class LVQ
       count += 1
     end
     file.close
+    p @result
   end
+
 
   #代表ベクトルを表示
   def print
@@ -168,16 +189,26 @@ v1=Vector[10.0,250.0]
 v2=Vector[10.0,750.0]
 v3=Vector[500.0,250.0]
 v4=Vector[700.0,400.0]
+v5=Vector[50.0,250.0]
+v6=Vector[50.0,780.0]
+v7=Vector[530.0,400.0]
+v8=Vector[720.0,600.0]
+
 
 amb.push(v1)
 amb.push(v2)
 amb.push(v3)
 amb.push(v4)
+amb.push(v5)
+amb.push(v6)
+amb.push(v7)
+amb.push(v8)
+
 
 lvq = LVQ.new(amb)
 lvq.make_plot
 lvq.print
-1000.times do
+10.times do
 lvq.lvq
 end
 lvq.daihyo_output
